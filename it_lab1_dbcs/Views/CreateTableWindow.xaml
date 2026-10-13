@@ -1,0 +1,74 @@
+﻿<Window x:Class="it_lab1_dbcs.Views.CreateTableWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Створення нової таблиці" Height="500" Width="600"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="#F5F5F7">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="Назва таблиці:" FontWeight="Bold" Margin="0,0,0,5" Foreground="#1D1D1F"/>
+            <TextBox x:Name="txtTableName" Height="30" VerticalContentAlignment="Center" Padding="5" FontSize="14"/>
+        </StackPanel>
+
+        <GroupBox Grid.Row="1" Header="Додати колонку" Padding="10" Margin="0,0,0,15" Background="White" BorderBrush="#E5E5EA">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                    <TextBlock Text="Назва поля:" FontSize="12" Foreground="#555"/>
+                    <TextBox x:Name="txtFieldName" Height="28" VerticalContentAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                    <TextBlock Text="Тип даних:" FontSize="12" Foreground="#555"/>
+                    <ComboBox x:Name="cmbFieldType" Height="28" VerticalContentAlignment="Center" SelectionChanged="CmbFieldType_SelectionChanged"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Margin="5,0,5,0">
+                    <TextBlock Text="Values Enum (через кому):" FontSize="12" Foreground="#555"/>
+                    <TextBox x:Name="txtEnumValues" Height="28" VerticalContentAlignment="Center" IsEnabled="False" ToolTip="Введіть значення через кому, наприклад: Низький, Середній, Високий"/>
+                </StackPanel>
+
+                <Button x:Name="btnAddField" Grid.Column="3" Content="+" FontWeight="Bold" FontSize="16" 
+                        Height="28" VerticalAlignment="Bottom" Background="#007AFF" Foreground="White" 
+                        BorderThickness="0" Click="BtnAddField_Click" Cursor="Hand"/>
+            </Grid>
+        </GroupBox>
+
+        <DataGrid x:Name="dgFields" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False"
+                  HeadersVisibility="Column" Background="White" BorderBrush="#E5E5EA" Margin="0,0,0,15">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Назва поля" Binding="{Binding Name}" Width="2*"/>
+                <DataGridTextColumn Header="Тип даних" Binding="{Binding Type}" Width="1.5*"/>
+                <DataGridTextColumn Header="Дозволені Enum значення" Binding="{Binding AllowedEnumValuesString}" Width="2.5*"/>
+                <DataGridTemplateColumn Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Видалити" Foreground="Red" Background="Transparent" 
+                                    BorderThickness="0" Click="BtnRemoveField_Click" Cursor="Hand"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Скасувати" Width="100" Height="32" Margin="0,0,10,0" 
+                    Background="#E5E5EA" Foreground="#1D1D1F" BorderThickness="0" Click="BtnCancel_Click"/>
+            <Button Content="Створити таблицю" Width="140" Height="32" 
+                    Background="#34C759" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="BtnCreate_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
