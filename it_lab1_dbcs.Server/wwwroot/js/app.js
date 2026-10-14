@@ -72,7 +72,6 @@ async function loadUserDatabases() {
 async function onDatabaseSelectChange() {
     if (isModified && currentDatabase) {
         if (!confirm(`База даних '${currentDatabase.Name}' має незбережені зміни. Переключитися без збереження?`)) {
-            // Повертаємо селект на поточну БД
             document.getElementById('cmbDatabases').value = currentDatabase.Name;
             return;
         }
@@ -135,8 +134,6 @@ function promptCreateNewDb() {
 
     showInputDialog('Створення нової БД', 'Введіть назву для нової бази даних:', `DB_${Date.now().toString().slice(-4)}`, (newDbName) => {
         createNewDatabaseObj(newDbName);
-
-        // Додаємо нову БД у випадаючий список
         const select = document.getElementById('cmbDatabases');
         const opt = document.createElement('option');
         opt.value = newDbName;
@@ -292,7 +289,18 @@ function openCreateTableModal() {
 
 function toggleEnumInput() {
     const type = document.getElementById('cmbFieldType').value;
-    document.getElementById('txtEnumValues').disabled = (type !== 'Enum' && type !== 'Set');
+    const input = document.getElementById('txtEnumValues');
+
+    if (type === 'Enum' || type === 'Set') {
+        input.disabled = false;
+        input.placeholder = type === 'Enum'
+            ? 'Варіанти Enum через кому'
+            : 'Варіанти Set через кому';
+    } else {
+        input.disabled = true;
+        input.value = '';
+        input.placeholder = 'Заблоковано (тільки для Enum / Set)';
+    }
 }
 
 function addColumnToSchema() {
@@ -306,32 +314,42 @@ function addColumnToSchema() {
     }
 
     let allowed = [];
-    if (type === 'Enum') {
-        if (!enumVal) return alert('Вкажіть варіанти Enum через кому');
-        allowed = enumVal.split(',').map(s => s.trim()).filter(s => s);
+    if (type === 'Enum' || type === 'Set') {
+        if (!enumVal) return alert(`Вкажіть дозволені варіанти для типу ${type} через кому`);
+        allowed = enumVal.split(',').map(s => s.trim()).filter(s => s.length > 0);
     }
 
-    tempSchemaFields.push({ Name: name, Type: type, AllowedEnumValues: allowed });
+    tempSchemaFields.push({
+        Name: name,
+        Type: type,
+        AllowedEnumValues: allowed
+    });
+
     document.getElementById('txtFieldName').value = '';
     document.getElementById('txtEnumValues').value = '';
+    toggleEnumInput();
     renderSchemaFieldsTable();
 }
 
 function renderSchemaFieldsTable() {
     const tbody = document.getElementById('tblSchemaFields');
     tbody.innerHTML = '';
+
     tempSchemaFields.forEach((f, i) => {
+        const allowedStr = (f.AllowedEnumValues && f.AllowedEnumValues.length > 0)
+            ? f.AllowedEnumValues.join(', ')
+            : '—';
+
         tbody.innerHTML += `
             <tr>
                 <td>${f.Name}</td>
                 <td>${f.Type}</td>
-                <td>${f.AllowedEnumValues.join(', ') || '—'}</td>
+                <td>${allowedStr}</td>
                 <td><button class="btn btn-danger btn-sm" onclick="tempSchemaFields.splice(${i},1);renderSchemaFieldsTable();">X</button></td>
             </tr>
         `;
     });
 }
-
 function submitCreateTable() {
     const name = document.getElementById('txtTableName').value.trim();
     if (!name) return alert('Вкажіть назву таблиці');
