@@ -1,0 +1,14 @@
+[
+  {
+    "Id": "b262ce9c-c9ed-4bac-aa55-c91491578b27",
+    "Username": "admin",
+    "PasswordHash": "Hv0PCfJ0166bOmW9VNNvwLwsxkBXQ3HKH8sjbAFv39U=",
+    "Salt": "EmtpCSRp1FfH01SY\u002BJOC\u002Bw=="
+  },
+  {
+    "Id": "091bc4ea-ee33-497d-b89f-ea7d21ed200b",
+    "Username": "admin2",
+    "PasswordHash": "C5hjeZUQAaKSZ5pixeWABK98YXeFgcLEMux3D\u002B\u002BWYD4=",
+    "Salt": "\u002BUffaxlW4HTAsB6oj4KoSQ=="
+  }
+]

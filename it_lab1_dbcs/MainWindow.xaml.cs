@@ -1,14 +1,15 @@
-﻿using System;
+﻿using it_lab1_dbcs.Models;
+using it_lab1_dbcs.Storage;
+using it_lab1_dbcs.Views;
+using Microsoft.Win32;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Microsoft.Win32;
-using it_lab1_dbcs.Models;
-using it_lab1_dbcs.Storage;
-using it_lab1_dbcs.Views;
 
 namespace it_lab1_dbcs
 {
@@ -70,8 +71,6 @@ namespace it_lab1_dbcs
             {
                 return SaveDatabase();
             }
-
-            // Якщо обрано "Ні" — продовжуємо без збереження, якщо "Скасувати" — зупиняємо дію
             return result == MessageBoxResult.No;
         }
 
@@ -80,7 +79,8 @@ namespace it_lab1_dbcs
         /// </summary>
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (!PromptSaveIfModified())
+            var prmt = PromptSaveIfModified();
+            if (!prmt)
             {
                 e.Cancel = true;
             }
@@ -128,7 +128,8 @@ namespace it_lab1_dbcs
 
         private void MenuNewDb_Click(object sender, RoutedEventArgs e)
         {
-            if (!PromptSaveIfModified()) return;
+            var prmt = PromptSaveIfModified();
+            if (!prmt) return;
             CreateNewDatabase($"NewDB_{DateTime.Now:HHmmss}");
         }
 
@@ -155,6 +156,7 @@ namespace it_lab1_dbcs
                 return false;
             }
         }
+        
         private void MenuOpenDb_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog
@@ -189,7 +191,8 @@ namespace it_lab1_dbcs
 
         private void MenuLogout_Click(object sender, RoutedEventArgs e)
         {
-            if (!PromptSaveIfModified()) return;
+            var prmt = PromptSaveIfModified();
+            if (!prmt) return;
             _isModified = false;
             var loginWin = new LoginWindow();
             Application.Current.MainWindow = loginWin;
@@ -334,18 +337,29 @@ namespace it_lab1_dbcs
         {
             if (_currentDatabase == null) return;
 
-            var dialog = new InputDialog("Перейменування БД", "Введіть нову назву для бази даних:", _currentDatabase.Name)
+            string oldName = _currentDatabase.Name;
+
+            var dialog = new InputDialog("Перейменування БД", "Введіть нову назву для бази даних:", oldName)
             {
                 Owner = this
             };
 
             if (dialog.ShowDialog() == true)
             {
-                string newDbName = dialog.InputText;
-                _currentDatabase.Name = newDbName;
-                lblDbName.Text = newDbName;
-                MarkAsModified(true);
-                SetStatus($"Назву бази даних змінено на '{newDbName}'.");
+                string newName = dialog.InputText;
+
+                try
+                {
+                    _dbManager.RenameDatabase(_currentDatabase, oldName, newName);
+
+                    lblDbName.Text = newName;
+                    MarkAsModified(false); 
+                    SetStatus($"Базу даних '{oldName}' успішно перейменовано на '{newName}'.");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Помилка перейменування: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 

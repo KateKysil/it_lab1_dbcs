@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
 using it_lab1_dbcs.Models;
@@ -81,6 +82,31 @@ namespace it_lab1_dbcs.Views
 
                     inputControl = comboBox;
                 }
+                else if (field.Type == FieldType.Set)
+                {
+                    var listBox = new ListBox
+                    {
+                        SelectionMode = SelectionMode.Multiple,
+                        Height = 100
+                    };
+
+                    foreach (var opt in field.AllowedEnumValues)
+                    {
+                        listBox.Items.Add(opt);
+                    }
+                    if (_existingRow != null && _existingRow.Values.TryGetValue(field.Name, out var valStr) && !string.IsNullOrEmpty(valStr))
+                    {
+                        var selected = valStr.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+                        foreach (var item in listBox.Items)
+                        {
+                            if (selected.Contains(item.ToString()))
+                            {
+                                listBox.SelectedItems.Add(item);
+                            }
+                        }
+                    }
+                    inputControl = listBox;
+                }
                 else
                 {
                     var textBox = new TextBox
@@ -126,6 +152,11 @@ namespace it_lab1_dbcs.Views
                     else if (control is ComboBox comboBox)
                     {
                         value = comboBox.SelectedItem?.ToString();
+                    }
+                    else if (control is ListBox listBox)
+                    {
+                        var selected = listBox.SelectedItems.Cast<object>().Select(x => x.ToString());
+                        value = string.Join(", ", selected);
                     }
 
                     newRow[field.Name] = value;

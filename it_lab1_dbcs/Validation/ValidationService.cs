@@ -20,7 +20,8 @@ namespace it_lab1_dbcs.Validation
                 { FieldType.Char, new CharValidator() },
                 { FieldType.String, new StringValidator() },
                 { FieldType.Enum, new EnumValidator() },
-                { FieldType.Email, new EmailValidator() }
+                { FieldType.Email, new EmailValidator() },
+                { FieldType.Set, new SetValidator() }
             };
         }
 

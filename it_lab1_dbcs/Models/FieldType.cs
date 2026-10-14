@@ -13,6 +13,7 @@ namespace it_lab1_dbcs.Models
         Char,
         String,
         Enum,
-        Email
+        Email,
+        Set
     }
 }

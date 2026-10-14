@@ -1,0 +1,39 @@
+{
+  "Name": "DefaultDB_admin",
+  "OwnerUsername": "admin",
+  "Tables": [
+    {
+      "Name": "Users",
+      "Schema": {
+        "Fields": [
+          {
+            "Name": "Id",
+            "Type": 0,
+            "AllowedEnumValues": []
+          },
+          {
+            "Name": "Name",
+            "Type": 3,
+            "AllowedEnumValues": []
+          }
+        ]
+      },
+      "Rows": [
+        {
+          "Id": "00000000-0000-0000-0000-000000000000",
+          "Values": {
+            "Id": "2",
+            "Name": "Julia"
+          }
+        },
+        {
+          "Id": "00000000-0000-0000-0000-000000000000",
+          "Values": {
+            "Id": "1",
+            "Name": "Kateryna"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Веб-СУБД</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f7;
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 60px);
+        }
+
+        .table-clickable th {
+            cursor: pointer;
+            user-select: none;
+        }
+
+            .table-clickable th:hover {
+                background-color: #e9ecef;
+            }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+        <span class="navbar-brand font-monospace fw-bold">💾 Веб-СУБД</span>
+        <div class="d-flex align-items-center me-auto ms-3">
+            <span class="text-white me-2 fw-semibold">База даних:</span>
+            <select id="cmbDatabases" class="form-select form-select-sm me-2 bg-light fw-bold" style="width: auto; min-width: 160px;" onchange="onDatabaseSelectChange()">
+                <option value="">Завантаження...</option>
+            </select>
+
+            <button class="btn btn-sm btn-outline-light me-2" onclick="promptCreateNewDb()">+ Нова БД</button>
+            <button class="btn btn-sm btn-outline-light me-2" onclick="promptRenameDb()">✏️ Назва БД</button>
+            <button class="btn btn-sm btn-success fw-bold" onclick="saveDatabaseOnServer()">💾 Зберегти БД</button>
+        </div>
+        <div class="d-flex align-items-center text-white">
+            <span class="me-3">Користувач: <strong id="lblCurrentUser">—</strong></span>
+            <button class="btn btn-outline-danger btn-sm" onclick="logout()">Вихід</button>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card shadow-sm sidebar">
+                    <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                        <span>Таблиці БД</span>
+                        <button class="btn btn-primary btn-sm" onclick="openCreateTableModal()">+ Нова</button>
+                    </div>
+                    <div class="list-group list-group-flush" id="lstTables">
+                    </div>
+                    <div class="card-footer bg-white d-flex gap-2" id="tableActions">
+                        <button class="btn btn-outline-secondary btn-sm w-50" onclick="promptRenameTable()">✏️ Назва</button>
+                        <button class="btn btn-outline-danger btn-sm w-50" onclick="deleteCurrentTable()">🗑️ Видалити</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span id="lblTableName" class="fw-bold fs-5">Обрана таблиця: —</span>
+                        <div class="btn-group">
+                            <button class="btn btn-success btn-sm" onclick="openAddRowModal()">+ Додати запис</button>
+                            <button class="btn btn-warning btn-sm text-white" onclick="openEditRowModal()">✏️ Редагувати</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteSelectedRow()">🗑️ Видалити</button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0 table-responsive" style="min-height: 400px;">
+                        <table class="table table-hover table-bordered mb-0 align-middle table-clickable" id="mainDataGrid">
+                            <thead class="table-light" id="dgHeader"></thead>
+                            <tbody id="dgBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="createTableModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Конструктор нової таблиці</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Назва таблиці</label>
+                        <input type="text" id="txtTableName" class="form-control" placeholder="Наприклад: Users">
+                    </div>
+                    <hr>
+                    <h6>Додати колонку:</h6>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <input type="text" id="txtFieldName" class="form-control" placeholder="Назва поля">
+                        </div>
+                        <div class="col-md-3">
+                            <select id="cmbFieldType" class="form-select" onchange="toggleEnumInput()">
+                                <option value="Integer">Integer</option>
+                                <option value="Real">Real</option>
+                                <option value="Char">Char</option>
+                                <option value="String">String</option>
+                                <option value="Enum">Enum</option>
+                                <option value="Email">Email</option>
+                                <option value="Set">Set (Множина)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" id="txtEnumValues" class="form-control" placeholder="Значення Enum через кому" disabled>
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-primary w-100" onclick="addColumnToSchema()">+</button>
+                        </div>
+                    </div>
+                    <table class="table table-sm table-bordered">
+                        <thead><tr><th>Поле</th><th>Тип</th><th>Enum варіанти</th><th>Дія</th></tr></thead>
+                        <tbody id="tblSchemaFields"></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                    <button class="btn btn-success fw-bold" onclick="submitCreateTable()">Створити таблицю</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="rowModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rowModalTitle">Запис</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dynamicRowForm"></form>
+                    <div id="rowValidationError" class="alert alert-danger mt-3 d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                    <button class="btn btn-primary fw-bold" onclick="submitRowForm()">Зберегти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="inputModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inputModalTitle">Введення</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" id="inputModalLabel">Введіть значення:</label>
+                    <input type="text" id="inputModalValue" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                    <button class="btn btn-primary" id="inputModalSaveBtn">Зберегти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

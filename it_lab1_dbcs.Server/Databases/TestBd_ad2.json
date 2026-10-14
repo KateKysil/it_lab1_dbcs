@@ -1,0 +1,50 @@
+{
+  "Name": "TestBd_ad2",
+  "OwnerUsername": "admin2",
+  "Tables": [
+    {
+      "Name": "Table1",
+      "Schema": {
+        "Fields": [
+          {
+            "Name": "Age",
+            "Type": 1,
+            "AllowedEnumValues": []
+          },
+          {
+            "Name": "Type",
+            "Type": 4,
+            "AllowedEnumValues": [
+              "\u0022Young\u0022",
+              "\u0022Adult\u0022",
+              "\u0022Old\u0022"
+            ]
+          }
+        ]
+      },
+      "Rows": [
+        {
+          "Id": "00000000-0000-0000-0000-000000000000",
+          "Values": {
+            "Age": "30",
+            "Type": "\u0022Adult\u0022"
+          }
+        },
+        {
+          "Id": "00000000-0000-0000-0000-000000000000",
+          "Values": {
+            "Age": "70",
+            "Type": "\u0022Old\u0022"
+          }
+        },
+        {
+          "Id": "00000000-0000-0000-0000-000000000000",
+          "Values": {
+            "Age": "16",
+            "Type": "\u0022Young\u0022"
+          }
+        }
+      ]
+    }
+  ]
+}

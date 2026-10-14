@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід у СУБД</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card shadow-sm auth-card p-4">
+        <h3 class="text-center fw-bold mb-4">Вітаємо в СУБД</h3>
+
+        <!-- Вкладки -->
+        <ul class="nav nav-pills nav-justified mb-3" id="authTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-pane">Увійти</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-pane">Реєстрація</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="authTabContent">
+            <!-- Вхід -->
+            <div class="tab-pane fade show active" id="login-pane">
+                <div class="mb-3">
+                    <label class="form-label">Логін</label>
+                    <input type="text" id="loginUsername" class="form-control" placeholder="Введіть логін">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="Введіть пароль">
+                </div>
+                <button class="btn btn-primary w-100 fw-bold" onclick="handleLogin()">Увійти</button>
+            </div>
+
+            <!-- Реєстрація -->
+            <div class="tab-pane fade" id="register-pane">
+                <div class="mb-3">
+                    <label class="form-label">Логін</label>
+                    <input type="text" id="regUsername" class="form-control" placeholder="Придумайте логін">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" id="regPassword" class="form-control" placeholder="Придумайте пароль">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Підтвердження пароля</label>
+                    <input type="password" id="regConfirmPassword" class="form-control" placeholder="Повторіть пароль">
+                </div>
+                <button class="btn btn-success w-100 fw-bold" onclick="handleRegister()">Зареєструватися</button>
+            </div>
+        </div>
+
+        <div id="statusAlert" class="alert mt-3 d-none text-center" role="alert"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = '/api/auth';
+
+        function showAlert(msg, isError = false) {
+            const el = document.getElementById('statusAlert');
+            el.className = `alert mt-3 text-center alert-${isError ? 'danger' : 'success'}`;
+            el.innerText = msg;
+            el.classList.remove('d-none');
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!username || !password) {
+                showAlert('Заповніть усі поля', true);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('currentUser', username);
+                    window.location.href = 'index.html';
+                } else {
+                    showAlert(data.message || 'Помилка авторизації', true);
+                }
+            } catch (err) {
+                showAlert('Не вдалося з’єднатися з сервером', true);
+            }
+        }
+
+        async function handleRegister() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const confirm = document.getElementById('regConfirmPassword').value.trim();
+
+            if (password !== confirm) {
+                showAlert('Паролі не збігаються', true);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showAlert('Реєстрація успішна! Увійдіть у систему.', false);
+                } else {
+                    showAlert(data.message || 'Помилка реєстрації', true);
+                }
+            } catch (err) {
+                showAlert('Не вдалося з’єднатися з сервером', true);
+            }
+        }
+    </script>
+</body>
+</html>

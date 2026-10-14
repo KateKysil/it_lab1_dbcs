@@ -87,7 +87,25 @@ namespace it_lab1_dbcs.Storage
 
             return result;
         }
+        public void RenameDatabase(Database db, string oldName, string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+                throw new ArgumentException("Назва бази даних не може бути порожньою.");
 
+            string oldFilePath = Path.Combine(DatabasesFolder, $"{oldName}.json");
+            string newFilePath = Path.Combine(DatabasesFolder, $"{newName}.json");
+
+            db.Name = newName;
+            if (!oldName.Equals(newName, StringComparison.OrdinalIgnoreCase) && File.Exists(oldFilePath))
+            {
+                if (File.Exists(newFilePath))
+                {
+                    File.Delete(newFilePath);
+                }
+                File.Move(oldFilePath, newFilePath);
+            }
+            SaveDatabase(db);
+        }
         /// <summary>
         /// Видалити файл бази даних з диску
         /// </summary>

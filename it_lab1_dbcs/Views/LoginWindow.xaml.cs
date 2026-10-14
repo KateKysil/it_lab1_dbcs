@@ -1,34 +1,28 @@
-﻿using System.Windows;
+﻿using it_lab1_dbcs.Storage;
+using System.Windows;
 using System.Windows.Media;
-using it_lab1_dbcs.Storage;
 
 namespace it_lab1_dbcs.Views
 {
     public partial class LoginWindow : Window
     {
         private readonly UserManager _userManager;
-
         public LoginWindow()
         {
             InitializeComponent();
             _userManager = new UserManager();
         }
-
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
             string username = txtLoginUsername.Text;
             string password = txtLoginPassword.Password;
-
             var (success, message) = _userManager.Login(username, password);
 
             if (success)
             {
-                ShowMessage(message, isError: false);
-
                 var mainWindow = new MainWindow();
-                Application.Current.MainWindow = mainWindow; 
+                Application.Current.MainWindow = mainWindow;
                 mainWindow.Show();
-
                 this.Close();
             }
             else

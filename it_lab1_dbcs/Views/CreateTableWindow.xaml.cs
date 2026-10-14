@@ -1,10 +1,12 @@
-﻿using System;
+﻿using it_lab1_dbcs.Models;
+using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using it_lab1_dbcs.Models;
 
 namespace it_lab1_dbcs.Views
 {
@@ -20,17 +22,29 @@ namespace it_lab1_dbcs.Views
         public CreateTableWindow()
         {
             InitializeComponent();
-            cmbFieldType.ItemsSource = Enum.GetValues(typeof(FieldType));
+            cmbFieldType.ItemsSource = Enum.GetValues(typeof(it_lab1_dbcs.Models.FieldType));
             cmbFieldType.SelectedIndex = 0;
             dgFields.ItemsSource = _fields;
         }
 
         private void CmbFieldType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (cmbFieldType.SelectedItem is FieldType selectedType)
+            bool isEnumOrSet = false;
+            if (cmbFieldType.SelectedItem is it_lab1_dbcs.Models.FieldType selectedType)
             {
-                txtEnumValues.IsEnabled = (selectedType == FieldType.Enum);
-                if (!txtEnumValues.IsEnabled)
+                isEnumOrSet = (selectedType == it_lab1_dbcs.Models.FieldType.Enum || selectedType == it_lab1_dbcs.Models.FieldType.Set);
+            }
+            else if (cmbFieldType.SelectedItem is ComboBoxItem item && item.Content != null)
+            {
+                string typeStr = item.Content.ToString() ?? string.Empty;
+                isEnumOrSet = typeStr.Equals("Enum", StringComparison.OrdinalIgnoreCase) ||
+                              typeStr.Equals("Set", StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (txtEnumValues != null)
+            {
+                txtEnumValues.IsEnabled = isEnumOrSet;
+                if (!isEnumOrSet)
                 {
                     txtEnumValues.Clear();
                 }
@@ -46,37 +60,35 @@ namespace it_lab1_dbcs.Views
                 MessageBox.Show("Введіть назву поля.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
             if (_fields.Any(f => f.Name.Equals(fieldName, StringComparison.OrdinalIgnoreCase)))
             {
                 MessageBox.Show("Поле з такою назвою вже додано у список.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-
-            FieldType selectedType = (FieldType)cmbFieldType.SelectedItem;
+            it_lab1_dbcs.Models.FieldType selectedType = (it_lab1_dbcs.Models.FieldType)cmbFieldType.SelectedItem;
             List<string> allowedEnumValues = new List<string>();
-
-            if (selectedType == FieldType.Enum)
+            if (selectedType == it_lab1_dbcs.Models.FieldType.Enum || selectedType == it_lab1_dbcs.Models.FieldType.Set)
             {
                 string rawEnumValues = txtEnumValues.Text.Trim();
                 if (string.IsNullOrWhiteSpace(rawEnumValues))
                 {
-                    MessageBox.Show("Для типу Enum необхідно вказати хоча б одне значення через кому.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"Для типу {selectedType} необхідно вказати хоча б одне значення через кому.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 allowedEnumValues = rawEnumValues.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                                                .Select(v => v.Trim())
-                                                .Where(v => !string.IsNullOrEmpty(v))
-                                                .Distinct()
-                                                .ToList();
+                                                 .Select(v => v.Trim())
+                                                 .Where(v => !string.IsNullOrEmpty(v))
+                                                 .Distinct()
+                                                 .ToList();
 
                 if (allowedEnumValues.Count == 0)
                 {
-                    MessageBox.Show("Введіть хоча б одне коректне значення для Enum.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"Введіть хоча б одне коректне значення для {selectedType}.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
             }
+
             _fields.Add(new FieldSchemeViewModel
             {
                 Name = fieldName,
@@ -134,7 +146,7 @@ namespace it_lab1_dbcs.Views
     public class FieldSchemeViewModel
     {
         public string Name { get; set; } = string.Empty;
-        public FieldType Type { get; set; }
+        public  it_lab1_dbcs.Models.FieldType Type { get; set; }
         public List<string> AllowedEnumValues { get; set; } = new List<string>();
 
         public string AllowedEnumValuesString => AllowedEnumValues.Count > 0
